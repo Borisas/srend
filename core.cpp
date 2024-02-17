@@ -1,4 +1,15 @@
 #include "core.h"
+#include <unistd.h>
+#include <limits.h>
+#include <libgen.h>
+#include <string.h>
+#include <iostream>
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 int srend::_screenWidth;
 int srend::_screenHeight;
@@ -17,6 +28,10 @@ srend::Random srend::rng;
 srend::TweenCore srend::_tweener;
 
 bool srend::init(const char* windowTitle, int screenWidth, int screenHeight) {
+
+    if (!initWorkingDir()) {
+        return false;
+    }
 
     _windowTitle = windowTitle;
     _screenWidth = screenWidth;
@@ -89,7 +104,46 @@ bool srend::init(const char* windowTitle, int screenWidth, int screenHeight) {
 
     return true;
 }
+
+bool srend::initWorkingDir() {
     
+#ifdef _WIN32
+    char path[MAX_PATH];
+    // Get the path to the executable
+    GetModuleFileNameA(NULL, path, MAX_PATH);
+    // Find the last occurrence of a backslash, the separator in Windows paths
+    char* lastSlash = strrchr(path, '\\');
+    if (lastSlash != NULL) {
+        *lastSlash = '\0'; // Truncate the path to remove the executable name
+    }
+    // Set the current directory to the directory containing the executable
+    SetCurrentDirectoryA(path);
+#else
+    char path[PATH_MAX];
+    // Get the path to the executable
+
+#ifdef __APPLE__
+    uint32_t size = 1024;
+    // ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
+    ssize_t count = _NSGetExecutablePath(path, &size) == 0;
+#endif
+#ifdef __linux__
+    ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
+#endif
+    if (count != -1) {
+        // Use dirname to get the directory containing the executable
+        char* dir = dirname(path);
+        // Change the current working directory
+        chdir(dir);
+    } else {
+        // Handle error
+        std::cerr << "Failed to get the path of the executable" << std::endl;
+        return false;
+    }
+
+    return true;
+#endif
+}
 
 bool srend::initShaders() {
     

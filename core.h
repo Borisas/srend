@@ -53,6 +53,7 @@ namespace srend {
     extern srend::Scene* _scene;
 
     bool init(const char* windowTitle, int screenWidth, int screenHeight);
+    bool initWorkingDir();
     bool initShaders();
     bool initGL();
     void loadScene(srend::Scene*);

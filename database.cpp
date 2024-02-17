@@ -133,7 +133,7 @@ srend::GLProgram* srend::Database::program(std::string vsFile, std::string fsFil
     );
 
     if ( !allocated ) {
-        printf("Failed to create program!\n");
+        printf("Failed to create program! (%s, %s)\n", vsFile.c_str(), fsFile.c_str());
         return nullptr;
     }
     else {
