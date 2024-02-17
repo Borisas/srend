@@ -40,8 +40,6 @@ int main( int argc, char* args[] ) {
     srend::physics.init(physicsConfig);
     srend::physics.setDebugDrawEnabled(false);
 
-    Configs::getInstance().init();
-
     auto game = Game();
     srend::loadScene(&game);
 
